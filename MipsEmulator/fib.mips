@@ -1,0 +1,9 @@
+mv r0 0
+mv r1 1
+mv r2 1
+mv r0 r1
+mv r1 r2
+add r2 r0 r1
+print r0
+bgtr 2 r0 100000
+j 4

@@ -1,0 +1,2 @@
+mv r0 1
+print r0
