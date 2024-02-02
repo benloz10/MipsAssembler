@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 class cpu {
 public:
@@ -10,60 +11,60 @@ public:
     bool Running = false;
     int returnCode = 0;
 
-    int Run(std::string comp[][128]) {
+    int Run(std::vector<std::vector<std::string>> *comp) {
         Running = true;
         std::cout << "RUNNING PROGRAM" << std::endl;
-        for (eax = 0; comp[eax]->length() > 0; eax++) {
+        for (eax = 0; eax < comp->size(); eax++) {
             if (!Running)
                 return returnCode;
-            Execute(comp[eax]);
+            Execute(&comp->at(eax));
         }
         return returnCode;
     }
 
-    int Execute(std::string line[]) {
+    int Execute(std::vector<std::string> *line) {
         lastOp = "";
-        for (int i = 0; i <= line->length(); i++) {
-            lastOp += line[i] + " ";
+        for (int i = 0; i < line->size(); i++) {
+            lastOp += line->at(i) + " ";
         }
-        std::string ins = line[0];
+        std::string ins = line->at(0);
         //std::cout << "Processor EXEC: " << line[0] << line[1] << line[2] << std::endl;
         if (ins == "#") {
             return 0;
         }
         if (ins == "mv") {
-            Move(line[1], line[2]);
+            Move(line->at(1), line->at(2));
         }
         if (ins == "add") {
-            int var = ReadReg(line[2]) + ReadReg(line[3]);
-            WriteReg(line[1], var);
+            int var = ReadReg(line->at(2)) + ReadReg(line->at(3));
+            WriteReg(line->at(1), var);
         }
         if (ins == "sub") {
-            int var = ReadReg(line[2]) - ReadReg(line[3]);
-            WriteReg(line[1], var);
+            int var = ReadReg(line->at(2)) - ReadReg(line->at(3));
+            WriteReg(line->at(1), var);
         }
         if (ins == "div") {
-            if (ReadReg(line[3]) == 0) {
+            if (ReadReg(line->at(3)) == 0) {
                 std::cout << "DIV BY 0";
                 return 0;
             }
-            int var = ReadReg(line[2]) / ReadReg(line[3]);
-            WriteReg(line[1], var);
+            int var = ReadReg(line->at(2)) / ReadReg(line->at(3));
+            WriteReg(line->at(1), var);
         }
         if (ins == "mul") {
-            int var = ReadReg(line[2]) * ReadReg(line[3]);
-            WriteReg(line[1], var);
+            int var = ReadReg(line->at(2)) * ReadReg(line->at(3));
+            WriteReg(line->at(1), var);
         }
         if (ins == "print") {
-            std::cout << "Out: " << ReadReg(line[1]) << std::endl;
+            std::cout << "Out: " << ReadReg(line->at(1)) << std::endl;
         }
         if (ins == "j") {
-            int jPos = ReadReg(line[1]);
+            int jPos = ReadReg(line->at(1));
             eax = jPos - 2;
         }
         if (ins == "bgt" || ins == "bgtr") {
-            if (ReadReg(line[2]) > ReadReg(line[3])) {
-                int jPos = ReadReg(line[1]);
+            if (ReadReg(line->at(2)) > ReadReg(line->at(3))) {
+                int jPos = ReadReg(line->at(1));
                 if (ins == "bgt") {
                     eax = jPos - 2;
                 }
@@ -162,11 +163,10 @@ private:
 
 class program {
 public:
-    std::string comp[128][128];
 
     bool initialized = false;
 
-    void LoadFile(std::string fileName) {
+    void LoadFile(std::string fileName, std::vector<std::vector<std::string>> *comp) {
 
         std::ifstream fs(fileName, std::ifstream::binary);
 
@@ -179,12 +179,14 @@ public:
 
         fs.read(&buffer[0], length);
 
-        std::string file[128];
+        std::vector<std::string> file;
+        file.push_back({});
 
         int lineCount = 0;
 
         for (int i = 0; i <= length; i++) {
             if (buffer[i] == '\n' || i == length) {
+                file.push_back({});
                 lineCount++;
             }
             else {
@@ -192,16 +194,14 @@ public:
             }
         }
 
-        std::string line[128];
-
         for (int i = 0; i < lineCount; i++) {
             std::string strBld = "";
-
+            comp->push_back({});
             int insCount = 0;
             for (int x = 0; x <= file[i].length(); x++) {
                 char c = file[i][x];
                 if (c == ' ' || c == '\n' || x == file[i].length() || c == '\r') {
-                    comp[i][insCount] = strBld;
+                    comp->back().push_back(strBld);
                     strBld = "";
                     insCount++;
                 }
@@ -229,11 +229,15 @@ int main()
     program prog;
     cpu processor;
 
-    prog.LoadFile("fib.mips");
+    std::vector<std::vector<std::string>> file;
+
+    prog.LoadFile("fib.mips", &file);
     int exitCode = 0;
     if (prog.initialized) {
-        exitCode = processor.Run(prog.comp);
+        exitCode = processor.Run(&file);
     }
+
     std::cout << "Processor finished with code " << exitCode << std::endl;
+    file.clear();
     return 0;
 }
