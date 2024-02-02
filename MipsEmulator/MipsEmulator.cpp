@@ -59,13 +59,59 @@ public:
         if (ins == "print") {
             std::cout << "Out: " << ReadReg(line->at(1)) << std::endl;
         }
-        if (ins == "j") {
+        //JUMPING
+        if (ins == "j" || ins == "jr" || ins == "jal" || ins == "jral") {
+            if (ins == "jal" || ins == "jral") {
+                ra = eax + 2;
+            }
             int jPos = ReadReg(line->at(1));
-            eax = jPos - 2;
+            if (ins == "j" || ins == "jal") {
+                eax = jPos - 2;
+            } else {
+                eax += jPos - 1;
+            }
+        }
+        //BRANCHING
+        if (ins == "beq" || ins == "beqr") {
+            if (ReadReg(line->at(1)) == ReadReg(line->at(2))) {
+                ra = eax + 2;
+                int jPos = ReadReg(line->at(3));
+                if (ins == "beq") {
+                    eax = jPos - 2;
+                }
+                else {
+                    eax += jPos - 1;
+                }
+            }
+        }
+        if (ins == "bne" || ins == "bner") {
+            if (ReadReg(line->at(1)) != ReadReg(line->at(2))) {
+                ra = eax + 2;
+                int jPos = ReadReg(line->at(3));
+                if (ins == "bne") {
+                    eax = jPos - 2;
+                }
+                else {
+                    eax += jPos - 1;
+                }
+            }
+        }
+        if (ins == "blt" || ins == "bltr") {
+            if (ReadReg(line->at(1)) < ReadReg(line->at(2))) {
+                ra = eax + 2;
+                int jPos = ReadReg(line->at(3));
+                if (ins == "blt") {
+                    eax = jPos - 2;
+                }
+                else {
+                    eax += jPos - 1;
+                }
+            }
         }
         if (ins == "bgt" || ins == "bgtr") {
-            if (ReadReg(line->at(2)) > ReadReg(line->at(3))) {
-                int jPos = ReadReg(line->at(1));
+            if (ReadReg(line->at(1)) > ReadReg(line->at(2))) {
+                ra = eax + 2;
+                int jPos = ReadReg(line->at(3));
                 if (ins == "bgt") {
                     eax = jPos - 2;
                 }
@@ -107,7 +153,9 @@ public:
     }
 
     int ReadReg(std::string reg) {
-        if (reg == "eax") {
+        if (reg == "ra") {
+            return ra;
+        } else if (reg == "eax") {
             return eax;
         } else if (reg[0] == 'r') {
             return *GetReg(reg);
@@ -122,20 +170,19 @@ public:
     }
 
     void WriteReg(std::string reg, int var) {
-        if (reg == "eax") {
-            Error("CANNOT DIRECTLY MODIFY EAX");
-        }
         *GetReg(reg) = var;
     }
 
     int* GetReg(std::string reg) {
-        if (reg[0] == 'r') {
+        if (reg == "ra") {
+            return &ra;
+        } else if (reg == "eax") {
+            return &eax;
+        } else if (reg[0] == 'r') {
             int rNum = std::stoi(reg.substr(1));
             if (rNum <= 63) {
                 return &registers[rNum];
             }
-        } else if (reg == "eax") {
-            return &eax;
         }
         Error("INVALID REGISTER " + reg);
         return &eax;
@@ -158,8 +205,8 @@ public:
 
 private:
     int eax = 0; //Sys call num
-    int registers[64] = {0};
-
+    int ra = 0; //Branch Return
+    int registers[64] = {0}; //...
 };
 
 class program {
@@ -238,7 +285,7 @@ int main()
     static clock::time_point end;
 
     start = clock::now();
-    int lineCount = prog.LoadFile("fib.mips", &file);
+    int lineCount = prog.LoadFile("testfile.mips", &file);
     int exitCode = 0;
     end = clock::now();
 

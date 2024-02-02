@@ -1,2 +1,8 @@
-mv r0 1
-print r0
+add r0 r0 1
+jal 6
+print 2
+print 21
+jr 3
+print ra
+j ra
+print 25

@@ -5,5 +5,5 @@ mv r0 r1
 mv r1 r2
 add r2 r0 r1
 print r0
-bgtr 2 r0 100000
+bgtr r0 100000 2
 j 4
