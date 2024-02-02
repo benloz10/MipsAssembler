@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <chrono>
 
 class cpu {
 public:
@@ -166,7 +167,7 @@ public:
 
     bool initialized = false;
 
-    void LoadFile(std::string fileName, std::vector<std::vector<std::string>> *comp) {
+    int LoadFile(std::string fileName, std::vector<std::vector<std::string>> *comp) {
 
         std::ifstream fs(fileName, std::ifstream::binary);
 
@@ -211,7 +212,7 @@ public:
             }
         }
         initialized = true;
-        std::cout << "File Loaded. (" << lineCount << " lines)" << std::endl;
+        return lineCount;
     }
 private:
     std::string fileDir = "";
@@ -225,19 +226,36 @@ class interpreter {
 
 int main()
 {
+    typedef std::chrono::high_resolution_clock clock;
+    typedef std::chrono::duration<float, std::milli> duration;
+
     bool _RUNNING = true;
     program prog;
     cpu processor;
 
     std::vector<std::vector<std::string>> file;
+    static clock::time_point start;
+    static clock::time_point end;
 
-    prog.LoadFile("fib.mips", &file);
+    start = clock::now();
+    int lineCount = prog.LoadFile("fib.mips", &file);
     int exitCode = 0;
+    end = clock::now();
+
+    duration fileLoadTime = end - start;
+
+    start = clock::now();
     if (prog.initialized) {
         exitCode = processor.Run(&file);
     }
+    end = clock::now();
 
+    duration elapsed = end - start;
+    duration totalTime = elapsed + fileLoadTime;
     std::cout << "Processor finished with code " << exitCode << std::endl;
+    std::cout << "Loaded file(" << lineCount << " lines) in " << fileLoadTime.count() << "ms" << std::endl;
+    std::cout << "Ran program in " << elapsed.count() << "ms" << std::endl;
+    std::cout << "Total time: " << totalTime.count() << "ms" << std::endl;
     file.clear();
     return 0;
 }
