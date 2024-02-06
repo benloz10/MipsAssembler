@@ -18,11 +18,25 @@
     <ClCompile Include="MipsEmulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="processor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fib.mips">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="testfile.mips" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="program.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="processor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -129,10 +129,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MipsEmulator.cpp" />
+    <ClCompile Include="processor.cpp" />
+    <ClCompile Include="program.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fib.mips" />
     <None Include="testfile.mips" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="processor.h" />
+    <ClInclude Include="program.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
