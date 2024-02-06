@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 
+
 class cpu {
 public:
 
@@ -12,7 +13,7 @@ public:
     bool Running = false;
     int returnCode = 0;
 
-    int Run(std::vector<std::vector<std::string>> *comp) {
+    int Run(const std::vector<std::vector<std::string>> *comp) {
         Running = true;
         std::cout << "RUNNING PROGRAM" << std::endl;
         for (eax = 0; eax < comp->size(); eax++) {
@@ -23,19 +24,22 @@ public:
         return returnCode;
     }
 
-    int Execute(std::vector<std::string> *line) {
+    int Execute(const std::vector<std::string> *line) {
         lastOp = "";
         for (int i = 0; i < line->size(); i++) {
             lastOp += line->at(i) + " ";
         }
-        std::string ins = line->at(0);
-        //std::cout << "Processor EXEC: " << line[0] << line[1] << line[2] << std::endl;
+        const std::string ins = line->at(0);
+
+        //WRITING
         if (ins == "#") {
             return 0;
         }
         if (ins == "mv") {
             Move(line->at(1), line->at(2));
         }
+
+        //MATHEMATICS
         if (ins == "add") {
             int var = ReadReg(line->at(2)) + ReadReg(line->at(3));
             WriteReg(line->at(1), var);
@@ -56,9 +60,56 @@ public:
             int var = ReadReg(line->at(2)) * ReadReg(line->at(3));
             WriteReg(line->at(1), var);
         }
-        if (ins == "print") {
-            std::cout << "Out: " << ReadReg(line->at(1)) << std::endl;
+        if (ins == "sqrt") {
+            int var = sqrt(ReadReg(line->at(2)));
+            WriteReg(line->at(1), var);
         }
+        if (ins == "floor") {
+            int var = floor(ReadReg(line->at(2)));
+            WriteReg(line->at(1), var);
+        }
+        if (ins == "ceil") {
+            int var = ceil(ReadReg(line->at(2)));
+            WriteReg(line->at(1), var);
+        }
+
+        //COMPARISON
+        if (ins == "and") {
+            bool var = ReadReg(line->at(2)) != 0 && ReadReg(line->at(3)) != 0;
+            if (var) {
+                WriteReg(line->at(1), 1);
+            } else {
+                WriteReg(line->at(1), 0);
+            }
+        }
+        if (ins == "or") {
+            bool var = ReadReg(line->at(2)) != 0 || ReadReg(line->at(3)) != 0;
+            if (var) {
+                WriteReg(line->at(1), 1);
+            }
+            else {
+                WriteReg(line->at(1), 0);
+            }
+        }
+        if (ins == "nor") {
+            bool var = ReadReg(line->at(2)) == 0 && ReadReg(line->at(3)) == 0;
+            if (var) {
+                WriteReg(line->at(1), 1);
+            }
+            else {
+                WriteReg(line->at(1), 0);
+            }
+        }
+        if (ins == "xor") {
+            bool var = ReadReg(line->at(2)) + ReadReg(line->at(3)) == 1;
+            if (var) {
+                WriteReg(line->at(1), 1);
+            }
+            else {
+                WriteReg(line->at(1), 0);
+            }
+        }
+
         //JUMPING
         if (ins == "j" || ins == "jr" || ins == "jal" || ins == "jral") {
             if (ins == "jal" || ins == "jral") {
@@ -71,7 +122,8 @@ public:
                 eax += jPos - 1;
             }
         }
-        //BRANCHING
+
+        //BRANCHING (sets ra)
         if (ins == "beq" || ins == "beqr") {
             if (ReadReg(line->at(1)) == ReadReg(line->at(2))) {
                 ra = eax + 2;
@@ -120,6 +172,11 @@ public:
                 }
             }
         }
+
+        //OUTPUT
+        if (ins == "print") {
+            std::cout << "Out: " << ReadReg(line->at(1)) << std::endl;
+        }
         if (ins == "lsreg") {
             std::cout << "REGDUMP" << std::endl;
             for (int i = 0; i < 64; i++) {
@@ -134,7 +191,7 @@ public:
         return 0;
     }
 
-    void Move(std::string reg, std::string var) {
+    void Move(const std::string reg, const std::string var) {
 
         //Parse Variable
         int num = ReadReg(var);
@@ -143,16 +200,16 @@ public:
         WriteReg(reg, num);
     }
 
-    bool IsNumber(char c) {
+    bool IsNumber(const char c) {
         int val = c;
         return val >= 48 && val <= 57;
     }
 
-    bool IsRegister(std::string reg) {
+    bool IsRegister(const std::string reg) {
         return reg == "eax" || reg[0] == 'r';
     }
 
-    int ReadReg(std::string reg) {
+    int ReadReg(const std::string reg) {
         if (reg == "ra") {
             return ra;
         } else if (reg == "eax") {
@@ -169,11 +226,11 @@ public:
         return NULL;
     }
 
-    void WriteReg(std::string reg, int var) {
+    void WriteReg(const std::string reg, const int var) {
         *GetReg(reg) = var;
     }
 
-    int* GetReg(std::string reg) {
+    int* GetReg(const std::string reg) {
         if (reg == "ra") {
             return &ra;
         } else if (reg == "eax") {
@@ -188,7 +245,7 @@ public:
         return &eax;
     }
 
-    void Error(std::string msg) {
+    void Error(const std::string msg) {
         std::cout << "[ERROR] " << msg << " [LINE " << eax+1 << "]:" << lastOp << std::endl;
         returnCode = 1;
         Running = false;
@@ -214,7 +271,7 @@ public:
 
     bool initialized = false;
 
-    int LoadFile(std::string fileName, std::vector<std::vector<std::string>> *comp) {
+    int LoadFile(const std::string fileName, std::vector<std::vector<std::string>> *comp) {
 
         std::ifstream fs(fileName, std::ifstream::binary);
 
@@ -271,6 +328,26 @@ class interpreter {
 };
 
 
+namespace fs = std::filesystem;
+
+std::string autocompleteFile(const std::string &compareString, const std::vector<std::string> &fileNameList) {
+    for (std::string name : fileNameList) {
+        if (name.length() >= compareString.length()) {
+            if (0 == name.compare(0, compareString.length(), compareString)) {
+                return name;
+            }
+        }
+    }
+    return "";
+}
+
+bool checkEnding(const std::string &fileName, const std::string &ending) {
+    if (fileName.length() >= ending.length()) {
+        return (0 == fileName.compare(fileName.length() - ending.length(), ending.length(), ending));
+    }
+    return false;
+}
+
 int main()
 {
     typedef std::chrono::high_resolution_clock clock;
@@ -280,29 +357,83 @@ int main()
     program prog;
     cpu processor;
 
-    std::vector<std::vector<std::string>> file;
-    static clock::time_point start;
-    static clock::time_point end;
+    struct stat sb;
+    bool selecting = true;
 
-    start = clock::now();
-    int lineCount = prog.LoadFile("testfile.mips", &file);
-    int exitCode = 0;
-    end = clock::now();
+    std::string input;
+    std::string selectedFile;
+    std::vector<std::string> fileNames;
 
-    duration fileLoadTime = end - start;
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        fs::path outfilename = entry.path();
+        std::string outfilename_str = outfilename.string();
+        const char* path = outfilename_str.c_str();
 
-    start = clock::now();
-    if (prog.initialized) {
-        exitCode = processor.Run(&file);
+        if (stat(path, &sb) == 0 && !(sb.st_mode & S_IFDIR)) {
+            const fs::path fileName = fs::relative(path);
+            if (checkEnding(fileName.string(), ".mips")) {
+                fileNames.push_back(fileName.string());
+            }
+        }
     }
-    end = clock::now();
+    while (_RUNNING) {
+        while (selecting) {
 
-    duration elapsed = end - start;
-    duration totalTime = elapsed + fileLoadTime;
-    std::cout << "Processor finished with code " << exitCode << std::endl;
-    std::cout << "Loaded file(" << lineCount << " lines) in " << fileLoadTime.count() << "ms" << std::endl;
-    std::cout << "Ran program in " << elapsed.count() << "ms" << std::endl;
-    std::cout << "Total time: " << totalTime.count() << "ms" << std::endl;
-    file.clear();
+            std::cout << "MIPS files found:" << std::endl;
+
+            for (std::string name : fileNames) {
+                std::cout << "    " << name << std::endl;
+            }
+
+            std::cout << "Please enter the name you'd like to execute. (Enter \"exit\" to quit.)" << std::endl;
+
+            std::cin >> input;
+
+            if (input == "exit") {
+                std::cout << "Exiting..." << std::endl;
+                return 0;
+            }
+
+            std::string fullName = autocompleteFile(input, fileNames);
+
+            if (fs::exists(fs::current_path().string() + "\\" + fullName)) {
+                selectedFile = fullName;
+                selecting = false;
+            }
+            else {
+                std::cout << "That file doesn't exist." << std::endl << "Valid files: " << std::endl;
+                for (std::string str : fileNames) {
+                    std::cout << str;
+                }
+            }
+        }
+
+        std::vector<std::vector<std::string>> file;
+        static clock::time_point start;
+        static clock::time_point end;
+
+        start = clock::now();
+        int lineCount = prog.LoadFile(selectedFile, &file);
+        int exitCode = 0;
+        end = clock::now();
+
+        const duration fileLoadTime = end - start;
+
+        start = clock::now();
+        if (prog.initialized) {
+            exitCode = processor.Run(&file);
+        }
+        end = clock::now();
+
+        const duration elapsed = end - start;
+        const duration totalTime = elapsed + fileLoadTime;
+        std::cout << "Processor finished with code " << exitCode << std::endl;
+        std::cout << "Loaded file(" << lineCount << " lines) in " << fileLoadTime.count() << "ms" << std::endl;
+        std::cout << "Ran program in " << elapsed.count() << "ms" << std::endl;
+        std::cout << "Total time: " << totalTime.count() << "ms" << std::endl;
+        file.clear();
+        selecting = true;
+    }
+
     return 0;
 }
