@@ -2,6 +2,7 @@
 int cpu::Run(const std::vector<std::vector<std::string>>* comp) {
     Running = true;
     std::cout << "RUNNING PROGRAM" << std::endl;
+    std::cout << "--CONSOLE OUTPUT--" << std::endl;
     for (eax = 0; eax < comp->size(); eax++) {
         if (!Running)
             return returnCode;
@@ -164,6 +165,9 @@ int cpu::Execute(const std::vector<std::string>* line) {
     //OUTPUT
     if (ins == "print") {
         std::cout << "Out: " << ReadReg(line->at(1)) << std::endl;
+    }
+    if (ins == "type") {
+        std::cout << (char)ReadReg(line->at(1));
     }
     if (ins == "lsreg") {
         std::cout << "REGDUMP" << std::endl;

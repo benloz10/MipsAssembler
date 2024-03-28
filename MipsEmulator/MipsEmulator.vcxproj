@@ -135,6 +135,7 @@
   <ItemGroup>
     <None Include="fib.mips" />
     <None Include="testfile.mips" />
+    <None Include="helloworld.mips" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="processor.h" />

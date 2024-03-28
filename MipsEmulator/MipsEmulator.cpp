@@ -106,6 +106,7 @@ int main()
 
         const duration elapsed = end - start;
         const duration totalTime = elapsed + fileLoadTime;
+        std::cout << "\n--END OF OUTPUT--" << std::endl;
         std::cout << "Processor finished with code " << exitCode << std::endl;
         std::cout << "Loaded file(" << lineCount << " lines) in " << fileLoadTime.count() << "ms" << std::endl;
         std::cout << "Ran program in " << elapsed.count() << "ms" << std::endl;
